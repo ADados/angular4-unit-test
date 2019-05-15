@@ -1,0 +1,37 @@
+kind: pipeline
+name: default
+
+steps:
+  - name: build
+    image: node:10.7.0-jessie
+    commands:
+      - npm i -g @angular/cli@1.2.4
+      - npm i
+      - ng build --prod
+  - name: test
+    image: node:10.7.0-jessie
+    commands:
+      - npm i -g @angular/cli@1.2.4
+      - npm i
+      - npm run e2e -- --protractor-config=e2e/protractor-ci.conf.js
+  - name: publish
+    image: plugins/docker
+    settings:
+      repo: 192.168.0.33:5000/angular-unit-test
+      tags:
+        - 0.0.4
+        - latest
+      registry: 192.168.0.33:5000
+      insecure: true
+  - name: deploy-k8s
+    image: quay.io/honestbee/drone-kubernetes
+    settings:
+      kubernetes_server: https://192.168.0.33:6443
+      kubernetes_token: eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJkZWZhdWx0LXRva2VuLWR2MjJtIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQubmFtZSI6ImRlZmF1bHQiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiIyNzIwMWVjNC0xMGZjLTExZTktODY1Yi05NGM2OTFhODU0NjkiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6a3ViZS1zeXN0ZW06ZGVmYXVsdCJ9.bR7A3aBjACSsfn3bmFbuyps0ZX4SFaDddwnGDdfozrPOm3l6nMKFnlMDD_e9o2rfSEaJ_nGwyPL3XvyuglkhvNsGDmV1pmMe1WJC0E1X7LtPHSbqEmakreOuquF4Do33bSJLed6x6DujK6tufeSiT3hj_-50XHw6swr9KhdAw48nSTOXaRbt89oMZtlGuqRbzSnvjkVhI7xyWU9MDuRvDZCIyM1B9SUsSs_lNMOFO0RBQAYNr1nrI7LUhvpquc0bgQDCyFWgimCsrh2Wg1BFYHtcURsCXFjYR5ykpk4Aiz_lKCQd0qeYgWcT-1xEFlzesiTNFkwogLA4RXgMs7j9Tg
+      namespace: default
+      deployment: angular-unit-test
+      repo: localhost:5000/angular-unit-test
+      container: angular-unit-test
+      tag: 0.0.4
+
+
